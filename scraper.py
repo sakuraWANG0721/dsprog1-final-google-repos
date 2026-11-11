@@ -23,7 +23,8 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (DS Programming 1 student assignment)"
 }
 SLEEP_SECONDS = 1   # サーバーに負担をかけないため, 1回アクセスするごとに1秒待つ
-MAX_RETRY = 3       # 通信エラーのときに何回までやり直すか
+MAX_RETRY = 5       # エラーのときに何回までやり直すか
+DEFAULT_WAIT_429 = 60   # 429 (アクセスしすぎ) で待つ秒数が分からないときに待つ秒数
 
 
 def fetch_html(page):
@@ -33,6 +34,16 @@ def fetch_html(page):
     for attempt in range(1, MAX_RETRY + 1):
         try:
             response = requests.get(BASE_URL, params=params, headers=HEADERS, timeout=30)
+
+            # 429 = アクセスしすぎ。1秒ずつ待っていても, 50ページくらい続けると返ってくる。
+            # GitHub は「Retry-After: 120」のように待つ秒数を教えてくれるので, その通り待つ。
+            if response.status_code == 429:
+                wait = int(response.headers.get("Retry-After", DEFAULT_WAIT_429))
+                print(f"  page {page}: アクセスが多すぎると言われたので {wait} 秒待ちます "
+                      f"({attempt}/{MAX_RETRY}回目)")
+                time.sleep(wait)
+                continue
+
             response.raise_for_status()   # 404 や 500 などのときはエラーにする
             return response.text
         except requests.RequestException as e:
@@ -40,6 +51,8 @@ def fetch_html(page):
             if attempt == MAX_RETRY:
                 raise
             time.sleep(SLEEP_SECONDS * 5)   # 少し長めに待ってからやり直す
+
+    raise RuntimeError(f"page {page} を {MAX_RETRY} 回試しても取得できませんでした")
 
 
 def parse_repositories(html):
