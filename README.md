@@ -141,5 +141,6 @@ Dart           91        17482
 | `fix/rate-limit` | 429 エラーへの対応 (実際に動かして見つかった問題の修正) |
 | `feature/select` | SELECT 文で表示する処理 |
 | `docs/readme` | README と取得したデータ |
+| `fix/sleep` | 課題の指示通り `time.sleep(1)` と書くように修正 |
 
 merge は `git merge --no-ff` で行い, どのブランチから入ったかが履歴に残るようにした。
