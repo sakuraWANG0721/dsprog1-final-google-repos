@@ -1,0 +1,9 @@
+# 仮想環境
+.venv/
+
+# Python のキャッシュ
+__pycache__/
+*.pyc
+
+# Mac
+.DS_Store
