@@ -2,10 +2,12 @@
 スクレイピングしたデータを保存するためのデータベース (SQLite) の処理
 """
 
+import os
 import sqlite3
 from datetime import datetime
 
-DB_PATH = "google_repos.db"
+# どのフォルダから実行しても同じファイルを使うように, このファイルと同じ場所を指定する
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "google_repos.db")
 
 
 def connect():

@@ -6,6 +6,7 @@
   python show.py Python     -> 指定した言語のリポジトリだけをスター数順に表示
 """
 
+import os
 import sys
 
 import database
@@ -79,6 +80,11 @@ def show_by_language(conn, language, limit=10):
 
 
 def main():
+    # DB ファイルが無いのに connect() すると空のファイルが作られてしまうので先に確認する
+    if not os.path.exists(database.DB_PATH):
+        print("データがありません。先に python main.py を実行してください。")
+        return
+
     conn = database.connect()
 
     # テーブルがまだ無い (main.py を実行していない) ときのチェック
