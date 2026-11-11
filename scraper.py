@@ -22,7 +22,6 @@ HEADERS = {
     # どのプログラムからのアクセスか分かるように User-Agent をつける
     "User-Agent": "Mozilla/5.0 (DS Programming 1 student assignment)"
 }
-SLEEP_SECONDS = 1   # サーバーに負担をかけないため, 1回アクセスするごとに1秒待つ
 MAX_RETRY = 5       # エラーのときに何回までやり直すか
 DEFAULT_WAIT_429 = 60   # 429 (アクセスしすぎ) で待つ秒数が分からないときに待つ秒数
 
@@ -38,7 +37,8 @@ def fetch_html(page):
             # 429 = アクセスしすぎ。1秒ずつ待っていても, 50ページくらい続けると返ってくる。
             # GitHub は「Retry-After: 120」のように待つ秒数を教えてくれるので, その通り待つ。
             if response.status_code == 429:
-                wait = int(response.headers.get("Retry-After", DEFAULT_WAIT_429))
+                retry_after = response.headers.get("Retry-After", "")
+                wait = int(retry_after) if retry_after.isdigit() else DEFAULT_WAIT_429
                 print(f"  page {page}: アクセスが多すぎると言われたので {wait} 秒待ちます "
                       f"({attempt}/{MAX_RETRY}回目)")
                 time.sleep(wait)
@@ -50,7 +50,7 @@ def fetch_html(page):
             print(f"  page {page} の取得に失敗 ({attempt}/{MAX_RETRY}回目): {e}")
             if attempt == MAX_RETRY:
                 raise
-            time.sleep(SLEEP_SECONDS * 5)   # 少し長めに待ってからやり直す
+            time.sleep(5)   # 少し長めに待ってからやり直す
 
     raise RuntimeError(f"page {page} を {MAX_RETRY} 回試しても取得できませんでした")
 
@@ -105,7 +105,7 @@ def scrape_all(max_pages=None):
         print(f"page {page}/{total_pages}: {len(repositories)} 件 (合計 {len(all_repositories)} 件)")
 
         page += 1
-        time.sleep(SLEEP_SECONDS)   # 次のページに行く前に必ず1秒待つ
+        time.sleep(1)   # サーバーに負担をかけないため, 次のページに行く前に必ず1秒待つ
 
     return all_repositories
 
